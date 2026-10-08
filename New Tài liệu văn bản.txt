@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<title>Vòng quay kỳ diệu - Tìm chữ D</title>
+<style>
+  :root{
+    --pink:#e83b52; --yellow:#ffc928; --green:#35a853;
+    --brown:#633b16; --cream:#fff8e7; --blue:#4b8bea;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;width:100%;height:100%;overflow:hidden}
+  body{
+    font-family:"Be Vietnam Pro","Arial",sans-serif;
+    background:linear-gradient(135deg,#fff4c7,#dff7ff 55%,#ffe2ef);
+    color:var(--brown);
+    touch-action:manipulation;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+  button{font:inherit;touch-action:manipulation}
+  .app{
+    width:100%;height:100%;
+    display:flex;flex-direction:column;
+    padding:10px;
+  }
+  header{
+    flex:0 0 auto;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:10px;padding:10px 16px;
+    background:#fff;
+    border:4px solid #ffd45a;border-radius:24px;
+    box-shadow:0 8px 0 rgba(126,82,12,.12);
+  }
+  h1{margin:0;font-size:clamp(20px,2.8vw,36px);color:#e83b52;text-transform:lowercase}
+  .subtitle{font-weight:800;font-size:clamp(12px,1.6vw,18px);margin-top:2px;text-transform:lowercase}
+  .score{
+    background:#fff2b8;border:3px solid #f2b800;border-radius:18px;
+    padding:8px 14px;font-size:clamp(16px,2vw,24px);font-weight:900;
+    white-space:nowrap;
+  }
+  #score{color:#e83b52}
+  .sound{
+    width:48px;height:48px;border-radius:15px;border:3px solid #f2b800;
+    background:#fff6c9;cursor:pointer;font-size:24px;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  main{
+    flex:1;min-height:0;
+    display:grid;grid-template-columns:minmax(300px,1.2fr) minmax(300px,.8fr);
+    gap:14px;margin-top:12px;
+  }
+  .card{
+    background:rgba(255,255,255,.95);
+    border:4px solid #ffd45a;border-radius:28px;
+    box-shadow:0 10px 0 rgba(126,82,12,.12);
+    min-height:0;
+  }
+  .wheel-card{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:10px;position:relative;
+  }
+  .instruction{
+    text-transform:lowercase;
+    background:#e83b52;color:white;font-weight:900;
+    border-radius:18px;padding:9px 16px;margin-bottom:8px;text-align:center;
+    font-size:clamp(14px,2vw,21px);
+  }
+  .wheel-area{
+    position:relative;
+    width:min(68vh,68vw,580px);
+    height:min(68vh,68vw,580px);
+    max-width:100%;max-height:calc(100% - 55px);
+    aspect-ratio:1/1;
+    display:flex;align-items:center;justify-content:center;
+  }
+  #wheelCanvas{
+    width:100%;height:100%;
+    border-radius:50%;
+    filter:drop-shadow(0 12px 10px rgba(80,45,0,.25));
+    transform:rotate(0deg);
+    transition:transform 4s cubic-bezier(0.15,0.99,0.15,1);
+  }
+  .pointer{
+    position:absolute;z-index:15;top:-6px;left:50%;
+    transform:translateX(-50%);
+    width:0;height:0;
+    border-left:22px solid transparent;
+    border-right:22px solid transparent;
+    border-top:0;
+    border-bottom:48px solid #e83b52;
+    filter:drop-shadow(0 3px 2px rgba(0,0,0,.25));
+  }
+  .pointer:after{
+    content:"";position:absolute;left:-8px;top:12px;
+    width:16px;height:16px;background:#ffd45a;border-radius:50%;
+    border:3px solid white;
+  }
+  .spin{
+    position:absolute;z-index:20;
+    width:clamp(80px,11vh,115px);height:clamp(80px,11vh,115px);
+    border-radius:50%;border:6px solid white;
+    background:linear-gradient(#ff5570,#e52745);
+    color:#fff;font-weight:1000;cursor:pointer;
+    box-shadow:0 8px 0 #a9172d,0 14px 18px rgba(110,24,37,.3);
+    font-size:clamp(16px,2vw,24px);
+  }
+  .spin:active{transform:scale(0.95)}
+  .spin:disabled{filter:grayscale(.5);opacity:0.7;cursor:not-allowed}
+
+  .challenge{
+    display:flex;flex-direction:column;
+    padding:16px;overflow:auto;
+  }
+  .challenge h2{margin:0 0 8px;text-align:center;color:#e83b52;font-size:clamp(20px,2.5vw,30px);text-transform:lowercase}
+  .picture{
+    width:min(240px,42vw);height:min(190px,26vh);
+    margin:4px auto 8px;
+    border:4px solid #ffd45a;border-radius:25px;
+    background:#fffaf0;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+    box-shadow:inset 0 0 20px rgba(255,190,50,.18);
+    padding:10px;
+  }
+  .picture img{
+    width:100%;height:100%;
+    object-fit:contain;
+  }
+  .word-title{
+    text-transform:lowercase;
+    text-align:center;font-size:clamp(22px,3vw,36px);
+    font-weight:1000;color:#5b3512;margin:3px 0;
+  }
+  .prompt{
+    text-transform:lowercase;
+    text-align:center;background:#fff2bd;border:3px solid #ffd45a;
+    border-radius:18px;padding:8px;font-weight:900;
+    font-size:clamp(14px,1.8vw,20px);
+  }
+  .letters{
+    display:flex;justify-content:center;align-items:center;flex-wrap:wrap;
+    gap:8px;margin:12px 0 8px;
+  }
+  .letter{
+    min-width:48px;height:58px;padding:4px 9px;
+    border:4px solid #f1c95b;border-radius:15px;
+    background:#fff;color:#55320b;font-size:clamp(23px,3vw,36px);
+    font-weight:1000;cursor:pointer;
+    box-shadow:0 5px 0 rgba(160,94,4,.15);
+    font-family:"Be Vietnam Pro","Arial",sans-serif;
+    text-transform:lowercase;
+    display:flex;align-items:center;justify-content:center;
+    user-select:none;-webkit-user-select:none;
+    touch-action:manipulation;
+  }
+  .letter.space{min-width:18px;width:18px;padding:0;border:0;box-shadow:none;background:transparent;cursor:default}
+  .letter.correct{background:#bdf4cf;border-color:#29a653;color:#16803b}
+  .letter.wrong{background:#ffd4d8;border-color:#e83b52;animation:shake .35s}
+  .feedback{
+    text-transform:lowercase;
+    min-height:48px;text-align:center;border-radius:18px;
+    padding:10px;font-weight:900;font-size:clamp(14px,1.7vw,19px);
+  }
+  .next{
+    align-self:center;margin-top:10px;padding:12px 24px;
+    border:3px solid white;border-radius:18px;
+    background:#35a853;color:white;font-weight:1000;
+    cursor:pointer;box-shadow:0 6px 0 #237a3b;
+    font-size:clamp(15px,2vw,21px);
+  }
+  .next.hidden{display:none}
+  .small-note{text-align:center;font-size:12px;font-weight:800;opacity:.65;margin-top:auto;padding-top:6px}
+
+  @keyframes shake{
+    0%,100%{transform:translateX(0)}
+    25%{transform:translateX(-7px)}
+    75%{transform:translateX(7px)}
+  }
+  @keyframes pop{
+    from{transform:scale(.7);opacity:0}
+    to{transform:scale(1);opacity:1}
+  }
+  .pop{animation:pop .3s ease-out}
+
+  .overlay{
+    position:fixed;inset:0;z-index:30;
+    display:none;align-items:center;justify-content:center;
+    background:rgba(30,20,10,.58);padding:15px;
+  }
+  .overlay.show{display:flex}
+  .result{
+    width:min(620px,94vw);background:#fffdf4;
+    border:5px solid #ffd45a;border-radius:30px;
+    padding:24px;text-align:center;
+    box-shadow:0 20px 50px rgba(0,0,0,.3);
+    animation:pop .25s ease-out;
+  }
+  .result h3{font-size:clamp(28px,5vw,46px);color:#e83b52;margin:0 0 10px}
+  .result .big{font-size:clamp(65px,12vw,120px)}
+  .result p{font-size:clamp(18px,3vw,28px);font-weight:900;margin:8px}
+  .result button{
+    margin-top:12px;padding:13px 25px;border:0;border-radius:18px;
+    background:#35a853;color:white;font-weight:1000;font-size:20px;
+    box-shadow:0 6px 0 #237a3b;cursor:pointer;
+  }
+
+  @media (orientation:portrait), (max-width:850px){
+    body{overflow:auto}
+    .app{height:auto;min-height:100%}
+    main{grid-template-columns:1fr}
+    .wheel-area{width:min(88vw,520px);height:min(88vw,520px)}
+    .challenge{min-height:430px}
+    .small-note{margin-top:8px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>🎡 vòng quay kỳ diệu</h1>
+      <div class="subtitle">bé tìm chữ <b>d</b> trong từ</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="score">⭐ <span id="score">0</span></div>
+      <button class="sound" id="soundBtn" aria-label="Bật tắt âm thanh">🔊</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="card wheel-card">
+      <div class="instruction" id="instruction">👆 chạm quay để bắt đầu!</div>
+      <div class="wheel-area">
+        <div class="pointer" aria-hidden="true"></div>
+        <canvas id="wheelCanvas" width="600" height="600"></canvas>
+        <button class="spin" id="spinBtn">QUAY</button>
+      </div>
+    </section>
+
+    <section class="card challenge">
+      <h2>🎯 thử thách cho bé</h2>
+      <div class="picture" id="pictureContainer">
+        <div style="color:#aaa;font-weight:bold;">Hãy quay vòng quay!</div>
+      </div>
+      <div class="word-title" id="wordTitle">---</div>
+      <div class="prompt" id="promptText">nhấn "quay" để bắt đầu trò chơi</div>
+      
+      <div class="letters" id="lettersContainer"></div>
+      
+      <div class="feedback" id="feedback"></div>
+      <button class="next hidden" id="nextBtn">quay tiếp ➔</button>
+      <div class="small-note">mẫu game mầm non - tìm chữ d trong từ vựng</div>
+    </section>
+  </main>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="result">
+    <h3>🎉 xuất sắc quá!</h3>
+    <div class="big">⭐</div>
+    <p>bé đã hoàn thành các từ vựng chứa chữ <b>d</b>!</p>
+    <button id="restartBtn">chơi lại từ đầu 🔄</button>
+  </div>
+</div>
+
+<script>
+// =====================================================
+// DỮ LIỆU TỪ VỰNG CHỮ D VÀ HÌNH ẢNH FILE TẢI LÊN
+// =====================================================
+const VOCAB_ITEMS = [
+  { word: "con dê", target: "d", image: "6.png" },
+  { word: "quả dừa", target: "d", image: "5.png" },
+  { word: "quả dâu", target: "d", image: "dau.png" },
+  { word: "cây dù", target: "d", image: "4.png" },
+  { word: "quả dứa", target: "d", image: "2.png" },
+  { word: "con dế", target: "d", image: "3.png" },
+  { word: "quả dưa hấu", target: "d", image: "dua.png" },
+  { word: "dưa chuột", target: "d", image: "1.png" }" } 
+];
+
+// Bảng màu cho 8 ô vòng quay
+const SLICE_COLORS = [
+  "#FF6B6B", "#4ECDC4", "#FFE66D", "#1A535C", 
+  "#FF9F1C", "#9B5DE5", "#F15BB5", "#00BBF9"
+];
+
+// CẤU HÌNH TRẠNG THÁI GAME
+let score = 0;
+let currentItem = null;
+let currentRotation = 0;
+let isSpinning = false;
+let isSoundOn = true;
+let completedCount = 0;
+let itemStatus = new Array(VOCAB_ITEMS.length).fill(false);
+
+// CÁC ELEMENT UI
+const canvas = document.getElementById("wheelCanvas");
+const ctx = canvas.getContext("2d");
+const spinBtn = document.getElementById("spinBtn");
+const soundBtn = document.getElementById("soundBtn");
+const pictureContainer = document.getElementById("pictureContainer");
+const wordTitle = document.getElementById("wordTitle");
+const promptText = document.getElementById("promptText");
+const lettersContainer = document.getElementById("lettersContainer");
+const feedback = document.getElementById("feedback");
+const nextBtn = document.getElementById("nextBtn");
+const scoreEl = document.getElementById("score");
+const instruction = document.getElementById("instruction");
+const overlay = document.getElementById("overlay");
+const restartBtn = document.getElementById("restartBtn");
+
+// TỔNG HỢP ÂM THANH BẰNG WEB AUDIO API
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(type) {
+  if (!isSoundOn) return;
+  try {
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    if (type === 'spin') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.08);
+    } else if (type === 'correct') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.4);
+    } else if (type === 'wrong') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(140, audioCtx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.3);
+    } else if (type === 'win') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(554.37, audioCtx.currentTime + 0.15);
+      osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.3);
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.45);
+      gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.7);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.7);
+    }
+  } catch (e) {
+    console.log("Audio play error", e);
+  }
+}
+
+// PHÁT ÂM TIẾNG VIỆT (WEB SPEECH SYNTHESIS)
+function speakText(text) {
+  if (!isSoundOn || !('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'vi-VN';
+  utter.rate = 0.85;
+  window.speechSynthesis.speak(utter);
+}
+
+// =====================================================
+// VẼ VÒNG QUAY BẰNG CANVAS
+// =====================================================
+function drawWheel() {
+  const numSlices = VOCAB_ITEMS.length;
+  const arc = (2 * Math.PI) / numSlices;
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+  const radius = canvas.width / 2 - 10;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = 0; i < numSlices; i++) {
+    const angle = i * arc;
+    
+    // Vẽ múi tròn
+    ctx.beginPath();
+    ctx.fillStyle = SLICE_COLORS[i % SLICE_COLORS.length];
+    ctx.moveTo(centerX, centerY);
+    ctx.arc(centerX, centerY, radius, angle, angle + arc);
+    ctx.lineTo(centerX, centerY);
+    ctx.fill();
+
+    // Viền múi
+    ctx.strokeStyle = "rgba(255,255,255,0.6)";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    // Lên chữ trên múi
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.rotate(angle + arc / 2);
+    ctx.textAlign = "right";
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "bold 24px 'Be Vietnam Pro', sans-serif";
+    ctx.shadowColor = "rgba(0,0,0,0.4)";
+    ctx.shadowBlur = 4;
+    ctx.fillText(VOCAB_ITEMS[i].word, radius - 30, 8);
+    ctx.restore();
+  }
+
+  // Vẽ viền ngoài vòng quay
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+  ctx.strokeStyle = "#FFD45A";
+  ctx.lineWidth = 12;
+  ctx.stroke();
+}
+
+// =====================================================
+// XỬ LÝ QUAY VÒNG QUAY
+// =====================================================
+function spinWheel() {
+  if (isSpinning) return;
+
+  // Lựa chọn ô chưa hoàn thành nếu còn
+  let uncompletedIndices = [];
+  itemStatus.forEach((done, index) => {
+    if (!done) uncompletedIndices.push(index);
+  });
+
+  let selectedIndex;
+  if (uncompletedIndices.length > 0) {
+    selectedIndex = uncompletedIndices[Math.floor(Math.random() * uncompletedIndices.length)];
+  } else {
+    selectedIndex = Math.floor(Math.random() * VOCAB_ITEMS.length);
+  }
+
+  isSpinning = true;
+  spinBtn.disabled = true;
+  instruction.innerText = "🎡 vòng quay đang quay...";
+  feedback.innerText = "";
+  feedback.className = "feedback";
+  nextBtn.classList.add("hidden");
+
+  const numSlices = VOCAB_ITEMS.length;
+  const sliceArc = 360 / numSlices;
+
+  // Tính toán góc quay để mũi tên dừng chính xác ở đỉnh (270 deg)
+  const targetSliceCenter = selectedIndex * sliceArc + sliceArc / 2;
+  const targetAngleInWheel = 270 - targetSliceCenter;
+  
+  const extraRounds = 5 + Math.floor(Math.random() * 3);
+  const currentMod = currentRotation % 360;
+  let addedRotation = (targetAngleInWheel - currentMod) % 360;
+  if (addedRotation < 0) addedRotation += 360;
+
+  currentRotation += extraRounds * 360 + addedRotation;
+  canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+  // Âm thanh khi quay
+  let spinAudioInterval = setInterval(() => {
+    playSound('spin');
+  }, 180);
+
+  setTimeout(() => {
+    clearInterval(spinAudioInterval);
+    isSpinning = false;
+    spinBtn.disabled = false;
+    showChallenge(selectedIndex);
+  }, 4000);
+}
+
+// =====================================================
+// HIỂN THỊ THỬ THÁCH BÀI HỌC
+// =====================================================
+function showChallenge(index) {
+  currentItem = VOCAB_ITEMS[index];
+  
+  // Hiển thị hình ảnh từ tập tin ảnh
+  pictureContainer.innerHTML = `<img src="${currentItem.image}" alt="${currentItem.word}">`;
+  pictureContainer.classList.add("pop");
+  setTimeout(() => pictureContainer.classList.remove("pop"), 300);
+
+  wordTitle.innerText = currentItem.word;
+  promptText.innerHTML = `bé hãy tìm chữ <b>"${currentItem.target}"</b> trong từ bên trên!`;
+  instruction.innerText = `👇 chạm vào chữ ${currentItem.target.toUpperCase()} để chọn!`;
+
+  speakText(`Bé hãy tìm chữ ${currentItem.target} trong từ ${currentItem.word}`);
+
+  // Tạo các nút chữ cái
+  lettersContainer.innerHTML = "";
+  const chars = Array.from(currentItem.word);
+
+  chars.forEach((ch, idx) => {
+    if (ch === ' ') {
+      const spaceDiv = document.createElement("div");
+      spaceDiv.className = "letter space";
+      lettersContainer.appendChild(spaceDiv);
+    } else {
+      const letterBtn = document.createElement("button");
+      letterBtn.className = "letter";
+      letterBtn.innerText = ch;
+      letterBtn.dataset.char = ch.toLowerCase();
+      letterBtn.dataset.index = idx;
+
+      letterBtn.addEventListener("click", () => handleLetterClick(letterBtn, ch.toLowerCase()));
+      lettersContainer.appendChild(letterBtn);
+    }
+  });
+}
+
+// =====================================================
+// XỬ LÝ KHI BÉ BẤM CHỌN CHỮ CÁI
+// =====================================================
+function handleLetterClick(buttonEl, clickedChar) {
+  if (buttonEl.classList.contains("correct") || buttonEl.classList.contains("wrong")) return;
+
+  const targetChar = currentItem.target.toLowerCase();
+
+  if (clickedChar === targetChar) {
+    buttonEl.classList.add("correct");
+    playSound('correct');
+    
+    score += 10;
+    scoreEl.innerText = score;
+
+    feedback.innerText = `👏 hoan hô! bé đã chọn đúng chữ "${targetChar}"!`;
+    feedback.className = "feedback pop";
+    feedback.style.background = "#bdf4cf";
+    feedback.style.color = "#16803b";
+
+    speakText(`Đúng rồi! Chữ ${targetChar}`);
+
+    const currentIndex = VOCAB_ITEMS.indexOf(currentItem);
+    if (currentIndex !== -1 && !itemStatus[currentIndex]) {
+      itemStatus[currentIndex] = true;
+      completedCount++;
+    }
+
+    const allButtons = lettersContainer.querySelectorAll(".letter:not(.space)");
+    allButtons.forEach(btn => {
+      if (btn.dataset.char === targetChar) {
+        btn.classList.add("correct");
+      }
+    });
+
+    nextBtn.classList.remove("hidden");
+    instruction.innerText = "🌟 giỏi lắm! nhấn 'quay tiếp' nhé!";
+
+    if (completedCount >= VOCAB_ITEMS.length) {
+      setTimeout(() => {
+        playSound('win');
+        overlay.classList.add("show");
+        speakText("Xuất sắc quá! Bé đã tìm đúng tất cả các từ!");
+      }, 1200);
+    }
+
+  } else {
+    buttonEl.classList.add("wrong");
+    playSound('wrong');
+
+    feedback.innerText = `😅 chưa đúng rồi, bé hãy tìm chữ "${targetChar}" nhé!`;
+    feedback.className = "feedback pop";
+    feedback.style.background = "#ffd4d8";
+    feedback.style.color = "#e83b52";
+
+    speakText(`Thử lại nào, bé tìm chữ ${targetChar} nhé`);
+
+    setTimeout(() => {
+      buttonEl.classList.remove("wrong");
+    }, 800);
+  }
+}
+
+// =====================================================
+// SỰ KIỆN KHỞI TẠO VÀ NÚT BẤM
+// =====================================================
+spinBtn.addEventListener("click", spinWheel);
+
+nextBtn.addEventListener("click", () => {
+  spinWheel();
+});
+
+soundBtn.addEventListener("click", () => {
+  isSoundOn = !isSoundOn;
+  soundBtn.innerText = isSoundOn ? "🔊" : "🔇";
+});
+
+restartBtn.addEventListener("click", () => {
+  score = 0;
+  completedCount = 0;
+  itemStatus.fill(false);
+  scoreEl.innerText = "0";
+  overlay.classList.remove("show");
+  
+  pictureContainer.innerHTML = '<div style="color:#aaa;font-weight:bold;">Hãy quay vòng quay!</div>';
+  wordTitle.innerText = "---";
+  promptText.innerText = 'nhấn "quay" để bắt đầu trò chơi';
+  lettersContainer.innerHTML = "";
+  feedback.innerText = "";
+  nextBtn.classList.add("hidden");
+  instruction.innerText = "👆 chạm quay để bắt đầu!";
+});
+
+window.addEventListener("load", () => {
+  drawWheel();
+});
+</script>
+</body>
+</html>
